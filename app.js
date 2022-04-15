@@ -1,25 +1,31 @@
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
+}
 const express = require('express');
-const fs =require('fs');
+const morgan = require('morgan');
+const tourRouter = require('./routes/tourRoutes');
+const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
-app.get('/', (req, res) => {
-    res.json({ message: 'Hello form the backend', app: 'Natours'});
+if (process.env.NODE_ENV !== 'production') {
+    app.use(morgan('dev'));
+}
+
+app.use(express.json());
+//app.use(express.static(`${__dirname}/public`));
+
+app.use((req, res, next) => {
+    console.log('test middleware');
+    next();
 })
 
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`));
-
-app.get('/api/v1/tours', (req, res) => {
-    res.json({
-        results: tours.length,
-        data: {
-            tours: tours
-        }
-    });
+app.use((req, res, next) => {
+    req.requestTime = new Date().toISOString();
+    next();
 })
 
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 
-const port = 3000;
-app.listen(port, () => {
-    console.log(`App is running on ${port}`);
-})
+module.exports = app;
