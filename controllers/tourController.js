@@ -1,10 +1,26 @@
 const Tour = require('../models/toursSchema');
+const APIFeatures = require('./../utils/apiFeatures');
+const AppError = require('./../utils/appError');
+const catchAsync = require('./../utils/catchAsync');
 
-
+// manipulated query string for top 5 most popular tours
+exports.mostPopular = async (req, res, next) => {
+    req.query.limit = '5';
+    req.query.sort = '-ratingsAverage,price';
+    req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+    next();
+};
 
 exports.getAllTours = async (req, res) => {
     try {
-        const tours = await Tour.find();
+
+        const features = new APIFeatures(Tour.find(), req.query)
+            .filter()
+            .sort()
+            .limitFields()
+            .paginate();
+
+        const tours = await features.query;
 
         res.status(200).json({ status: 'success', results: tours.length, data: { tours } });
     } catch (err) {

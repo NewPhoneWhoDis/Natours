@@ -3,6 +3,10 @@ const tourController = require('./../controllers/tourController');
 
 const router = express.Router();
 
+// mostPopular is middleware that manipulates the query object before it reaches /most-popular
+
+// Implementing route for most popular tours requested by Users
+router.route('/most-popular').get(tourController.mostPopular, tourController.getAllTours);
 
 router
     .route('/')
