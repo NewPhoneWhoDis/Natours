@@ -9,7 +9,7 @@ const tourSchema = new mongoose.Schema(
             unique: true,
             trim: true,
             maxlength: [40, 'A tour name must have less or equal then 40 characters'],
-            minlength: [10, 'A tour name must have more or equal then 10 characters']
+            minlength: [10, 'A tour name must have more or equal then 10 characters'],
         },
         slug: String,
         duration: {
@@ -91,13 +91,14 @@ tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 });
 
-// DOCUMENT MIDDLEWARE: runs before .save() and .create()
+//* DOCUMENT MIDDLEWARE: runs before .save() and .create(), won't run before insertMany()
 tourSchema.pre('save', function (next) {
     this.slug = slugify(this.name, { lower: true });
     next();
 });
 
-// Query middleware
+//* Query middleware
+// /^find/ means that this middleware should be executed for all the commands that start with find
 tourSchema.pre(/^find/, function (next) {
     this.find({ secretTour: { $ne: true } });
 
@@ -105,13 +106,15 @@ tourSchema.pre(/^find/, function (next) {
     next();
 });
 
+// runs after the query has been executed
 tourSchema.post(/^find/, function (docs, next) {
     console.log(`Query took ${Date.now() - this.start} milliseconds!`);
     next();
 });
 
-// Aggregation middleware
+//* Aggregation middleware
 tourSchema.pre('aggregate', function (next) {
+    // filtering out the secret tours from the aggregation pipeline
     this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
 
     console.log(this.pipeline());
