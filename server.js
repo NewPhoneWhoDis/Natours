@@ -1,3 +1,9 @@
+process.on('uncaughtException', err => {
+    console.log('Uncaught Exception!');
+    console.log(err.name, err.message);
+    process.exit(1);
+})
+
 const dotenv = require('dotenv');
 
 dotenv.config({ path: './config.env' });
@@ -14,6 +20,16 @@ mongoose.connect(process.env.DATABASE, {
 }).then(() => { console.log('Database connected') })
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+
+const server = app.listen(port, () => {
     console.log(`App is running on ${port}`);
 });
+
+process.on('unhandledRejection', err => {
+    console.log(err.name, err.message);
+    console.log('Shutting down...');
+    // code 0 is success / 1 is uncalled exception
+    server.close(() => {
+        process.exit(1);
+    })
+})
