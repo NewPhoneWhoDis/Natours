@@ -8,6 +8,10 @@ const router = express.Router();
 // Implementing route for most popular tours requested by Users
 router.route('/most-popular').get(tourController.mostPopular, tourController.getAllTours);
 
+router.route('/tour-statistics').get(tourController.getToutStatistics);
+
+router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+
 router
     .route('/')
     .get(tourController.getAllTours)
