@@ -12,6 +12,12 @@ const signToken = id => {
     });
 }
 
+const createAndSendToken = (user, statusCode, res) => {
+    const token = signToken(user._id);
+
+    res.status(statusCode).json({ status: 'succes', token, data: { user } });
+}
+
 exports.signup = catchAsync(async (req, res, next) => {
     /* //* Security flaw:
     Anyone can specify the role as admin and register as an admin
@@ -24,9 +30,7 @@ exports.signup = catchAsync(async (req, res, next) => {
         passwordConfirm: req.body.passwordConfirm
     });
 
-    const token = signToken(newUser._id);
-
-    res.status(201).json({ status: 'succes', token, data: { user: newUser } });
+    createAndSendToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -42,9 +46,7 @@ exports.login = catchAsync(async (req, res, next) => {
         return next(new AppError('Wrong email or password!', 401));
     }
 
-    const token = signToken(user._id);
-
-    res.status(201).json({ status: 'succes', token });
+    createAndSendToken(user, 200, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -140,7 +142,23 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save();
 
-    const token = signToken(user._id);
-
-    res.status(201).json({ status: 'succes', token });
+    createAndSendToken(user, 200, res);
 });
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+    // Getting user from the collection of users
+    const user = await User.findById(req.user.id).select('+password');
+
+    // Checking to see if the posted current password is correct. If it is, password will be updated.
+    if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+        return next(new AppError('Wrong password, please try again!', 401));
+    }
+
+    // Password update
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    await user.save();
+
+    // Send JWT
+    createAndSendToken(user, 200, res);
+})
