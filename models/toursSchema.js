@@ -34,7 +34,8 @@ const tourSchema = new mongoose.Schema(
             type: Number,
             default: 4.5,
             min: [1, 'Rating must be above 1.0'],
-            max: [5, 'Rating must be below 5.0']
+            max: [5, 'Rating must be below 5.0'],
+            set: val => Math.round(val * 10) / 10  // from 4.6666 => 46.6666 => 47 => 4,7
         },
         ratingsQuantity: {
             type: Number,
@@ -121,6 +122,10 @@ const tourSchema = new mongoose.Schema(
 tourSchema.index({ price: 1 });
 tourSchema.index({ slub: 1 });
 
+//* In order to perform geospatial Queries we need to attribute an index to the field where the geospatial data is stored!
+// 2dSphere for data describing real points or for fictional points on a 2 dimentional plane!
+tourSchema.index({ startLocation: '2dsphere' })
+
 /*combined query for price ascending and ratingsAverage descending order
 tourSchema.index({ price: 1, ratingsAverage: -1})
 */
@@ -167,9 +172,20 @@ tourSchema.pre(/^find/, function (next) {
 })
 
 //* Aggregation middleware
+// added geoAggregate because in the previous implementation $match was running first and was creating an error for geoNear
 tourSchema.pre('aggregate', function (next) {
+    const GEOSPATIAL_OPERATOR_TEST = /^[$]geo[a-zA-Z]*/;
+
+    // Checking if the pipeline stage name has any geo operator using the regex.
+    // The 'search' method on a string returns -1 if the match is not found else non zero value
+    const geoAggregate = this.pipeline()
+        .filter(stage => Object.keys(stage)[0].search(GEOSPATIAL_OPERATOR_TEST) !== -1
+        );
+
     // filtering out the secret tours from the aggregation pipeline
-    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+    if (geoAggregate.length === 0) {
+        this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+    }
 
     console.log(this.pipeline());
     next();

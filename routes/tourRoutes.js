@@ -16,6 +16,12 @@ router.route('/tour-statistics').get(tourController.getToutStatistics);
 router.route('/monthly-plan/:year').get(authController.protect, authController.restrictTo('admin', 'lead-guide', 'guide'),
     tourController.getMonthlyPlan);
 
+// gets the tours within user's current location with option of specifying kilometers or miles
+router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin);
+
+//* Calculation of distances
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
+
 router
     .route('/')
     .get(tourController.getAllTours)
@@ -25,10 +31,5 @@ router
     .get(tourController.getTour)
     .patch(authController.protect, authController.restrictTo('admin', 'lead-guide'), tourController.updateTour)
     .delete(authController.protect, authController.restrictTo('admin', 'lead-guide'), tourController.deleteTour);
-
-/*
-router.route('/:tourId/reviews')
-.post(authController.protect, authController.restrictTo('user'), reviewController.createReview);
-*/
 
 module.exports = router;

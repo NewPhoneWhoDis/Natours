@@ -92,3 +92,59 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
 
     res.status(200).json({ status: 'success', data: { plan } });
 });
+
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+    // Destructoring to get all the data from params
+    const { distance, latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(',');
+
+    // converting to radians formula: radians = distance / radius of the earth
+    // first calculation is for miles and second for kilometers
+    const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+    if (!lat || !lng) {
+        next(new AppError('Please specify the latitude and latitude and longitude in the format: lat,lng.'), 400);
+    }
+
+    const tours = await Tour.find({ startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } } });
+
+    res.status(200).json({ status: 'success', results: tours.length, data: { data: tours } });
+})
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+    const { latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(',');
+
+    // Multiplies in either miles or kilometers
+    const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+    if (!lat || !lng) {
+        next(new AppError('Please specify the latitude and latitude and longitude in the format: lat,lng.'), 400);
+    }
+
+    // geoNear must always be first and at least 1 of the fields needs to contains a geospatial index
+    // if there are more than 1 geospatial indexes, a keys param must be defined and specified which one should be used
+    const distances = await Tour.aggregate([
+        {
+            $geoNear: {
+                near: {
+                    // starting point
+                    type: 'Point',
+                    coordinates: [lng * 1, lat * 1]
+                },
+                // stores distances
+                distanceField: 'distance',
+                distanceMultiplier: multiplier
+            }
+        },
+        {
+            // gets just the distances and the name of the tours
+            $project: {
+                distance: 1,
+                name: 1
+            }
+        }
+    ]);
+
+    res.status(200).json({ status: 'success', data: { data: distances } });
+})
