@@ -17,7 +17,7 @@ const reviewSchema = new mongoose.Schema(
             default: Date.now(),
             select: false
         },
-        author: [
+        user: [
             {
                 type: mongoose.Schema.ObjectId,
                 ref: 'User',
@@ -39,5 +39,25 @@ const reviewSchema = new mongoose.Schema(
 );
 
 const Review = mongoose.model('Review', reviewSchema);
+
+reviewSchema.pre(/^find/, function (next) {
+    //* Cannot decide whether I want to populate with user and tour or just user
+    /*
+    this.populate({
+        path: 'user',
+        select: 'name photo'
+    }).populate({
+        path: 'tour',
+        select: 'name'
+    })
+    */
+
+    this.populate({
+        path: 'user',
+        select: 'name photo'
+    })
+
+    next();
+})
 
 module.exports = Review;
