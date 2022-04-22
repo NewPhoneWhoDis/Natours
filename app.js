@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewRoutes');
 const AppError = require('./utils/appError');
 const errorHandler = require('./controllers/errorController');
 const rateLimit = require('express-rate-limit');
@@ -13,8 +14,13 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const path = require('path');
 
 const app = express();
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(helmet({ referrerPolicy: { policy: "no-referrer" }, }));
 
@@ -52,13 +58,14 @@ app.use(hpp({
     ]
 }));
 
-// Serve static files
-app.use(express.static(`${__dirname}/public`));
-
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();
     next();
 })
+
+//* Routes
+
+app.use('/', viewRouter);
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
