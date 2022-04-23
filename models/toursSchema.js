@@ -139,7 +139,7 @@ tourSchema.virtual('reviews', {
     ref: 'Review',
     foreignField: 'tour',
     localField: '_id'
-})
+});
 
 //* DOCUMENT MIDDLEWARE: runs before .save() and .create(), won't run before insertMany()
 tourSchema.pre('save', function (next) {

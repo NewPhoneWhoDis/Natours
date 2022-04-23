@@ -22,7 +22,8 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(helmet({ referrerPolicy: { policy: "no-referrer" }, }));
+app.use(helmet());
+
 
 if (process.env.NODE_ENV !== 'production') {
     app.use(morgan('dev'));
