@@ -1,28 +1,51 @@
 const APPError = require("../utils/appError");
 
-const sendErrorDev = (err, res) => {
-    res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message,
-        stack: err.stack,
-        error: err
-    })
-}
-
-const sendErrorProduction = (err, res) => {
-    // Trusted Operational error, hence send message to the client
-    if (err.isOperational) {
+const sendErrorDev = (err, req, res) => {
+    if (req.originalUrl.startsWith('/api')) {
         res.status(err.statusCode).json({
             status: err.status,
             message: err.message,
+            stack: err.stack,
             error: err
         })
-        // Won't show error details: Programming or other unexpected error
     } else {
-        console.error('ERROR', err);
-
-        res.status(500).json({ status: 'error', message: 'Something went very wrong!' });
+        res.status(err.statusCode).render('error', {
+            title: 'Something went wrong',
+            msg: err.message
+        })
     }
+}
+
+const sendErrorProduction = (err, req, res) => {
+    // For the API
+    if (req.originalUrl.startsWith('/api')) {
+        // Operational, trusted error: send message to client
+        if (err.isOperational) {
+            return res.status(err.statusCode).json({
+                status: err.status,
+                message: err.message
+            });
+        }
+        // Programming or other unknown error: will not leak error details
+        console.error('ERROR 💥', err);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Something went very wrong!'
+        });
+    }
+
+    if (err.isOperational) {
+        console.log(err);
+        return res.status(err.statusCode).render('error', {
+            title: 'Something went wrong!',
+            msg: err.message
+        });
+    }
+    console.error('ERROR 💥', err);
+    return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: 'Please try again later.'
+    });
 }
 
 const handleCastErrorDB = err => {
@@ -54,11 +77,12 @@ module.exports = (err, req, res, next) => {
     err.status = err.status || 'error'
 
     if (process.env.NODE_ENV === 'development') {
-        sendErrorDev(err, res);
+        sendErrorDev(err, req, res);
     } else if (process.env.NODE_ENV === 'production') {
         // Handling Mongo Erros
 
         let error = { ...err };
+        error.message = err.message;
 
         if (error.name === 'CastError') {
             error = handleCastErrorDB(error);
@@ -80,7 +104,7 @@ module.exports = (err, req, res, next) => {
             error = handleTokenExpiredError();
         }
 
-        sendErrorProduction(error, res);
+        sendErrorProduction(error, req, res);
     }
 
 }
