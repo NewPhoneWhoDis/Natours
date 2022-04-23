@@ -15,6 +15,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -40,6 +41,9 @@ app.use('/api', limiter);
 
 // Body parser that reads data from the body
 app.use(express.json({ limit: '10kb' }));
+
+// Cookie parser
+app.use(cookieParser());
 
 // Data sanitization agains NoSQL query injection
 app.use(mongoSanitize());

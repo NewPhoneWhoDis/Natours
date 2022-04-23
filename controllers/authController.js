@@ -69,6 +69,8 @@ exports.protect = catchAsync(async (req, res, next) => {
 
     if (!token) {
         return next(new AppError('You are not logged in! Please log in to get access.', 401));
+    } else if (req.cookies.jwt) {
+        token = req.cookies.jwt;
     }
 
     // The Verification Token
@@ -172,4 +174,32 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
     // Send JWT
     createAndSendToken(user, 200, res);
-})
+});
+
+// Only for rendered pages
+exports.isLoggedIn = async (req, res, next) => {
+    if (req.cookies.jwt) {
+        try {
+            //* Verifying the token
+            const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
+
+            //* Checks if the user still exists
+            const currentUser = await User.findById(decoded.id);
+            if (!currentUser) {
+                return next();
+            }
+
+            //* Checks if the user changed his password after the token was issued
+            if (currentUser.changedPasswordAfter(decoded.iat)) {
+                return next();
+            }
+
+            //* There is currently logged in user so he is made accessable to the templates
+            res.locals.user = currentUser;
+            return next();
+        } catch (err) {
+            return next();
+        }
+    }
+    next();
+};

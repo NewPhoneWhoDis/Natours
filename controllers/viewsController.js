@@ -22,8 +22,13 @@ exports.getTour = catchAsync(async (req, res, next) => {
 
     // 2) Build template
     // 3) Render template using data from 1)
-    res.status(200).render('tour', {
-        title: `${tour.name} Tour`,
-        tour
-    });
+    res.status(200).render('tour', { title: `${tour.name} Tour`, tour });
 });
+
+exports.getLoginForum = (req, res) => {
+    res.status(200).render('login', { title: 'Log into your account!' });
+}
+
+exports.getSignUpForum = (req, res) => {
+    res.status(200).render('signup', { title: 'Create an acccount!' });
+}
