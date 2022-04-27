@@ -25,9 +25,9 @@ The tools that I use in this project are:
 - Sendgrind
 
 TODO:
--- Fix api bugs
--- Implement Password Reset Emails with Sendgrid
--- Integrating Stripe in Back-End
--- Integrating Stripe in Front-End
--- Implement Bookings
--- Deploy to Heroku
+- Fix api bugs
+- Implement Password Reset Emails with Sendgrid
+- Integrating Stripe in Back-End
+- Integrating Stripe in Front-End
+- Implement Bookings
+- Deploy to Heroku
