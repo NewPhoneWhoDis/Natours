@@ -1,6 +1,6 @@
-const User = require('./../models/usersSchema');  // usersSchema
+const User = require('./../models/usersSchema');
 const catchAsync = require('./../utils/catchAsync');
-const AppError = require('../utils/appError');
+const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
 
 // Creates arr of the elements that are allowed in

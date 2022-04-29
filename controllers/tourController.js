@@ -1,7 +1,7 @@
-const Tour = require('../models/toursSchema');
-const AppError = require('./../utils/appError');
+const Tour = require('./../models/toursSchema');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
+const AppError = require('./../utils/appError');
 
 // manipulated query string for top 5 most popular tours
 exports.mostPopular = async (req, res, next) => {
