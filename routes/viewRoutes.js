@@ -19,6 +19,8 @@ router.get('/login', viewController.getLoginForum);
 
 router.get('/signup', viewController.getSignUpForum);
 
+router.get('/me', authController.protect, viewController.getAccount);
+
 
 module.exports = router;
 
