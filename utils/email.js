@@ -13,7 +13,13 @@ module.exports = class Email {
     newTransport() {
         if (process.env.NODE_ENV === 'production') {
             // Send with Sendgrid
-            return -1;
+            return nodemailer.createTransport({
+                service: 'SendGrid',
+                auth: {
+                    user: process.env.SENDGRID_USERNAME,
+                    pass: process.env.SENDGRID_PASSWORD
+                }
+            });
         } else {
             return nodemailer.createTransport({
                 // In order for this to work with Gmail, activate 'less secure app' option in gmail
