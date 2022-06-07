@@ -3,7 +3,7 @@ const User = require('./../models/usersSchema');
 const jwt = require('jsonwebtoken');
 const AppError = require('./../utils/appError');
 const { promisify } = require('util');
-const sendEmail = require('./../utils/email');
+const Email = require('./../utils/email');
 const crypto = require('crypto');
 
 const signToken = id => {
@@ -47,6 +47,9 @@ exports.signup = catchAsync(async (req, res, next) => {
         password: req.body.password,
         passwordConfirm: req.body.passwordConfirm
     });
+
+    const url = `${req.protocol}://${req.get('host')}/me`;
+    await new Email(newUser, url).sendWelcomeEmail();
 
     createSendToken(newUser, 201, res);
 });
@@ -132,11 +135,14 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
     // In case of an Error reset both the token and the expires property
     try {
-        await sendEmail({
+        // TODO: fix  
+        /*
+        await Email({
             email: user.email,
             subject: 'Your password reset token (valid for 10 min)',
             message
         });
+        */
 
         res.status(200).json({ status: 'success', message: 'Token sent to email!' });
     } catch (err) {

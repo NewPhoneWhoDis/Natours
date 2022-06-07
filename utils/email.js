@@ -5,7 +5,7 @@ const pug = require('pug');
 module.exports = class Email {
     constructor(user, url) {
         this.to = user.email;
-        this.firstName = user.name.splic(' ')[0];
+        this.firstName = user.name.split(' ')[0];
         this.url = url;
         this.from = `Testing Mail <${EMAIL_FROM}>`;
     }
@@ -31,6 +31,7 @@ module.exports = class Email {
     async send(template, subject) {
         const htmlMail = pug.renderFile(`${__dirname}/../views/emails/${template}.pug`, {
             firstName: this.firstName,
+            // TODO: add IMG uploads
             url: this.url,
             subject
         });
