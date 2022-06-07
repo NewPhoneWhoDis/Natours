@@ -49,4 +49,8 @@ module.exports = class Email {
     async sendWelcomeEmail() {
         await this.send('welcome', 'Welcome to Natours!');
     }
+
+    async sendPasswordReset() {
+        await this.send('passwordReset', 'Your password reset token is valid for 10 minutes');
+    }
 }
