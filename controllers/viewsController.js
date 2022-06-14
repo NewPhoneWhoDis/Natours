@@ -1,4 +1,5 @@
 const Tour = require('../models/toursSchema');
+const Booking = require('../models/bookingSchema');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const User = require('../models/usersSchema');
@@ -40,10 +41,8 @@ exports.getAccount = (req, res) => {
 };
 
 exports.getMyTours = catchAsync(async (req, res, next) => {
-    // 1) Find all bookings
     const bookings = await Booking.find({ user: req.user.id });
 
-    // 2) Find tours with the returned IDs
     const tourIDs = bookings.map(el => el.tour);
     const tours = await Tour.find({ _id: { $in: tourIDs } });
 
