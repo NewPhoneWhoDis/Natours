@@ -25,10 +25,13 @@ The tools that I use in this project are:
 - Sendgrind
 
 TODO:
+Ideas for upgrades
 
-- Fix api bugs
-- <del>Implement Password Reset Emails with Sendgrid</del>
-- <del>Integrating Stripe in Back-End</del>
-- Integrating Stripe in Front-End
-- Implement Bookings
-- Deploy to Heroku
+- Restrict users to only be able to review a tour that they have booked.
+- nested booking routes:/tours/:id/bookings & /users/:id/bookings
+- advanced authentication: two-factor auth & keep users logged in with refresh tokens
+- sign up form
+- hide booking section / prevent duplicate bookings on the model
+- implement lite tour functionallity with favorites page
+- display "My Reviews"
+- "Manage" pages for admins
